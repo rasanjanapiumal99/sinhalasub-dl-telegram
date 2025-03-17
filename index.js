@@ -1,26 +1,22 @@
 require('dotenv').config(); // Load environment variables
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios'); // For making HTTP requests
-const express = require('express'); // For running the server
+const axios = require('axios');
 
 // Load environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
 const API_KEY = process.env.API_KEY;
 
-// Create a bot that uses 'polling' to fetch new updates
+// Validate environment variables
+if (!BOT_TOKEN || !CHANNEL_ID || !API_KEY) {
+  console.error('Missing required environment variables. Please check your .env file.');
+  process.exit(1);
+}
+
+// Initialize the bot
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// Create an Express app to listen on port 8000
-const app = express();
-const PORT = process.env.PORT || 8000;
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-// Function to check if a user is a member of the channel
+// Utility function to check if a user is subscribed to the channel
 async function isUserSubscribed(chatId, userId) {
   try {
     const chatMember = await bot.getChatMember(CHANNEL_ID, userId);
@@ -37,9 +33,9 @@ async function searchMovies(query) {
     const response = await axios.get(
       `https://api.skymansion.site/movies-dl/search/?api_key=${API_KEY}&q=${encodeURIComponent(query)}`
     );
-    return response.data.SearchResult.result; // Return the search results
+    return response.data.SearchResult?.result || [];
   } catch (error) {
-    console.error('Error fetching movie data:', error);
+    console.error('Error fetching movie data:', error.message);
     return null;
   }
 }
@@ -50,9 +46,9 @@ async function fetchDownloadLinks(movieId) {
     const response = await axios.get(
       `https://api.skymansion.site/movies-dl/download/?id=${movieId}&api_key=${API_KEY}`
     );
-    return response.data.downloadLinks.result; // Return the download links
+    return response.data.downloadLinks?.result || null;
   } catch (error) {
-    console.error('Error fetching download links:', error);
+    console.error('Error fetching download links:', error.message);
     return null;
   }
 }
@@ -65,21 +61,7 @@ bot.onText(/\/start/, (msg) => {
     `For example: *Deadpool*\n\n` +
     `Use /help for more information.`;
 
-  // Add a "Clone Bot" button linking to the GitHub repository
-  const githubRepoUrl = 'https://github.com/rasanjanapiumal99/sinhalasub-dl-telegram'; // Replace with your GitHub repo URL
-  bot.sendMessage(chatId, welcomeMessage, {
-    parse_mode: 'Markdown',
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: 'Clone Bot',
-            url: githubRepoUrl,
-          },
-        ],
-      ],
-    },
-  });
+  bot.sendMessage(chatId, welcomeMessage, { parse_mode: 'Markdown' });
 });
 
 // Handle /help command
