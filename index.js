@@ -1,6 +1,7 @@
 require('dotenv').config(); // Load environment variables
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const http = require('http'); // Add HTTP module
 
 // Load environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -184,3 +185,14 @@ function createBot() {
 
 // Start the bot
 createBot();
+
+// Create a minimal HTTP server for Koyeb health checks
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is running...');
+});
+
+const PORT = 8000; // Default port for Koyeb health checks
+server.listen(PORT, () => {
+  console.log(`HTTP server is running on port ${PORT}`);
+});
