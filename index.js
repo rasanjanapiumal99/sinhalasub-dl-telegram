@@ -163,13 +163,33 @@ function createBot() {
 
       // Add Telegram download links
       if (downloadData.links.telegramLinks.length > 0) {
-        message += '*Download Links:*\n';
+        message += '*Telegram Links:*\n';
         downloadData.links.telegramLinks.forEach((link) => {
           message += `📥 *${link.quality}* (${link.size}) - [Download](${link.link})\n`;
         });
       } else {
-        message += 'No download links available.';
+        message += 'No Telegram links available.\n';
       }
+
+      if (downloadData.links.driveLinks.length > 0) {
+        message += '*\nDrive Links:*\n';
+        downloadData.links.driveLinks.forEach((link) => {
+          message += `📥 *${link.quality}* (${link.size}) - [Download](${link.link})\n`;
+        });
+      } else {
+        message += 'No drive links available.\n';
+      }
+
+      if (downloadData.links.otherLinks.length > 0) {
+        message += '\n*OtherLinks:*\n';
+        downloadData.links.otherLinks.forEach((link) => {
+          message += `📥 *${link.quality}* (${link.size}) - [Download](${link.link})\n`;
+        });
+      } else {
+        message += 'No other links available.\n';
+      }
+
+      
 
       bot.sendMessage(chatId, message, {
         parse_mode: 'Markdown',
